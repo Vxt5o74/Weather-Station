@@ -11,9 +11,9 @@ env3_0 = unit.get(unit.ENV3, unit.PORTA)
 label0 = M5TextBox(100, 104, "Temp :", lcd.FONT_Default, 0xFFFFFF, rotate=0)
 label1 = M5TextBox(100, 145, "Pressure :", lcd.FONT_Default, 0xFFFFFF, rotate=0)
 label2 = M5TextBox(100, 185, "Humidity :", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-label3 = M5TextBox(200, 104, "Text", lcd.FONT_Default, 0xffffff, rotate=0)
-label4 = M5TextBox(200, 144, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-label5 = M5TextBox(200, 184, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label3 = M5TextBox(200, 104, "Text", lcd.FONT_Default, 0xffffff, rotate=0)          #env3 sensor reads temp in celcius
+label4 = M5TextBox(200, 144, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)          #no idea what units the sensor is reading pressure in (or if we'll need to program it to do maths and convert to proper units, will check documentation and see)
+label5 = M5TextBox(200, 184, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)          #env3 sensor might be reading humidity in hPa, but I could be wrong (will consult documentation to know for certain)
 
 
 while True:
