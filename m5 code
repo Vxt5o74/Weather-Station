@@ -11,9 +11,12 @@ env3_0 = unit.get(unit.ENV3, unit.PORTA)
 label0 = M5TextBox(100, 104, "Temp :", lcd.FONT_Default, 0xFFFFFF, rotate=0)
 label1 = M5TextBox(100, 145, "Pressure :", lcd.FONT_Default, 0xFFFFFF, rotate=0)
 label2 = M5TextBox(100, 185, "Humidity :", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-label3 = M5TextBox(200, 104, "Text", lcd.FONT_Default, 0xffffff, rotate=0)          #env3 sensor reads temp in celcius
-label4 = M5TextBox(200, 144, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)          #emv3 sensor seems to read pressure in hPa, but readings provided don't really make sense (will see if this is due to technical defect or something else)
-label5 = M5TextBox(200, 184, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)          #env3 sensor according to m5's website outputs a number that can be converted into relative humidity, will see to figuring out the conversion factor/formula
+label3 = M5TextBox(200, 104, "Text", lcd.FONT_Default, 0xffffff, rotate=0)
+label4 = M5TextBox(200, 144, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)                 #m5stack documentation claims sensor reads pressure in hPa, but readings don't make sense (will see if this is mechanical defect)
+label5 = M5TextBox(200, 184, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label6 = M5TextBox(275, 104, "°C", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label7 = M5TextBox(275, 145, "hPa", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label8 = M5TextBox(275, 185, "%", lcd.FONT_Default, 0xFFFFFF, rotate=0)
 
 
 while True:
