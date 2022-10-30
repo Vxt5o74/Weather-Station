@@ -11,8 +11,6 @@ float tmp      = 0.0;
 float hum      = 0.0;
 float pressure = 0.0;
 
-const char ssid[] = "Fios-nBPr2";               //wifi ssid
-const char password[] = "try29union23kiss";     //wifi password
 
 void setup() {
   // put your setup code here, to run once:
