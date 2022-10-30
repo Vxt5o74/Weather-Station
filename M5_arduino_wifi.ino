@@ -73,8 +73,8 @@ void loop() {
     M5.lcd.setCursor(0, 100);
     M5.lcd.setTextSize(2);
     M5.lcd.setTextColor(WHITE);
-    M5.lcd.drawRect(0, 100, 300, 300, BLACK);
-    M5.lcd.fillRect(0, 100, 300, 300, BLACK);
+    M5.lcd.drawRect(0, 100, 300, 300, BLACK);       //creates rectangle around sensor readings
+    M5.lcd.fillRect(0, 100, 300, 300, BLACK);       //fills rectangle around sensor readings------need both this and ^^ to happen, otherwise sensor readings eventually become garbled text
     M5.Lcd.printf("Temp: %2.1fC \r\nTemp: %2.1fF \r\nHumi: %2.0f%% \r\nPressure: %2.0fPa \r\nPressure: %2.0fmmHg",
                   tmp, tmp*(9/5)+32, hum, pressure, pressure/1.333);
 
