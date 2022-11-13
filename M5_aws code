@@ -22,6 +22,7 @@ label1 = M5TextBox(15, 124, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
 
 if wifiCfg.wlan_sta.isconnected():
   label0.setText('Wifi is connected')
+//connects to personal AWS cluster made specifically to test viability of m5stack to AWS via mqtt
 aws = AWS(things_name='ENV_TEST', host='a3q4v5ov3u200d-ats.iot.us-east-2.amazonaws.com', port=8883, keepalive=60, cert_file_path="/flash/res/certificate.pem.crt", private_key_path="/flash/res/private.pem.key")
 aws.start()
 while True:
