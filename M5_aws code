@@ -1,0 +1,31 @@
+from m5stack import *
+from m5ui import *
+from uiflow import *
+import wifiCfg
+from IoTcloud.AWS import AWS
+import json
+
+import time
+import unit
+
+setScreenColor(0x222222)
+env3_0 = unit.get(unit.ENV3, unit.PORTA)
+
+
+
+
+wifiCfg.doConnect('Wifi_ssid_here', 'Wifi_password_here')  //wifi credentials left blank for security reasons
+
+label0 = M5TextBox(16, 15, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label1 = M5TextBox(15, 124, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+
+
+if wifiCfg.wlan_sta.isconnected():
+  label0.setText('Wifi is connected')
+aws = AWS(things_name='ENV_TEST', host='a3q4v5ov3u200d-ats.iot.us-east-2.amazonaws.com', port=8883, keepalive=60, cert_file_path="/flash/res/certificate.pem.crt", private_key_path="/flash/res/private.pem.key")
+aws.start()
+while True:
+  aws.publish(str('env3'),str((json.dumps(({'temp':(env3_0.temperature),'hum':(env3_0.humidity),'pres':(env3_0.pressure)})))))
+  label1.setText(str(str((json.dumps(({'temp':(env3_0.temperature),'hum':(env3_0.humidity),'pres':(env3_0.pressure)}))))))
+  wait(5)
+  wait_ms(2)
