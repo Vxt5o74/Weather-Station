@@ -14,8 +14,10 @@ env3_0 = unit.get(unit.ENV3, unit.PORTA)
 
 
 time_date = None
+date = None
+time = None
 
-wifiCfg.doConnect('wifi_name', 'wifi_password')     //wifi ssid and password has placeholder for security reasons, just fill this in with your own wifi credentials
+wifiCfg.doConnect('wifi', 'password')
 
 label0 = M5TextBox(16, 15, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
 label1 = M5TextBox(15, 124, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
@@ -26,14 +28,15 @@ label2 = M5TextBox(15, 41, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
 
 if wifiCfg.wlan_sta.isconnected():
   label0.setText('Wifi is connected')
-ntp = ntptime.client(host='us.pool.ntp.org', timezone=7)
-//host is an AWS IoT core/cluster thing I made, along with the respective port and key files (certificates and private keys also specifically for my own AWS IoT core, replace these with your own files if using your own implementation)
+ntp = ntptime.client(host='cn.pool.ntp.org', timezone=(-5))
 aws = AWS(things_name='ENV_TEST', host='a3q4v5ov3u200d-ats.iot.us-east-2.amazonaws.com', port=8883, keepalive=60, cert_file_path="/flash/res/certificate.pem.crt", private_key_path="/flash/res/private.pem.key")
 aws.start()
 while True:
-  aws.publish(str('env3'),str((json.dumps(({'temp (C)':(env3_0.temperature),'hum (%)':(env3_0.humidity),'pres (hPa)':(env3_0.pressure),'timedate':time_date,'station':'Dewie'})))))
-  label1.setText(str(str((json.dumps(({'temp (C)':(env3_0.temperature),'hum (%)':(env3_0.humidity),'pres (hPa)':(env3_0.pressure),'timedate':time_date,'station':'Dewie'}))))))
   time_date = ntp.formatDatetime('-', ':')
+  date = ntp.formatDate('-')
+  time = ntp.formatTime(':')
+  aws.publish(str('device/1/data'),str((json.dumps(({'temp':(env3_0.temperature),'humidity':(env3_0.humidity),'pressure':(env3_0.pressure),'time':time,'date':date,'station':'Dewie'})))))
+  label1.setText(str(str((json.dumps(({'temp (C)':(env3_0.temperature),'hum (%)':(env3_0.humidity),'pres (hPa)':(env3_0.pressure),'time':time,'date':date,'station':'Dewie'}))))))
   label2.setText(str(time_date))
   wait(5)
   wait_ms(2)
