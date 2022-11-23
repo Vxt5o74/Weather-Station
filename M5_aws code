@@ -39,7 +39,8 @@ label2 = M5TextBox(15, 41, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
 if wifiCfg.wlan_sta.isconnected():
   label0.setText('Wifi is connected')
 ntp = ntptime.client(host='cn.pool.ntp.org', timezone=(-5))
-aws = AWS(things_name='ENV_TEST', host='a3q4v5ov3u200d-ats.iot.us-east-2.amazonaws.com', port=8883, keepalive=60, cert_file_path="/flash/res/certificate.pem.crt", private_key_path="/flash/res/private.pem.key")
+//will need new AWS key and certificate from Victor if running this, please contact for new files required
+aws = AWS(things_name='ENV_TEST', host='a3q4v5ov3u200d-ats.iot.us-east-1.amazonaws.com', port=8883, keepalive=60, cert_file_path="/flash/res/new_certificate.pem.crt", private_key_path="/flash/res/new_private.pem.key")
 aws.start()
 while True:
   time_date = ntp.formatDatetime('-', ':')
