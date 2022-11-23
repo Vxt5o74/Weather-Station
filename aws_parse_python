@@ -20,8 +20,8 @@ item_count = 0
 #iterates over all files present in bucket, reads files, converts data to json, then parses and prints
 for obj in bucket.objects.all():
     item_count = item_count + 1
-    key = obj.key
-    body = obj.get()['Body'].read().decode('utf-8')
+    key = obj.key                                       #reads file and acquires key used by AWS (basically primary key) for each file/item in bucket
+    body = obj.get()['Body'].read().decode('utf-8')     #reads file and acquires actual data within each file/item in bucket
     parsed_data = json.loads(body)
     print(parsed_data)
     print(parsed_data['pressure']               #simply here for parse testing purposes
