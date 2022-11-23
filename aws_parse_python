@@ -1,23 +1,28 @@
-import boto3                    //file is w.i.p
+import boto3
 import pandas
+import json
+import time
 
-client = boto3.client(
+#establishes connection to user and contains permissions needed to access bucket, along with read files within bucket
+s3 = boto3.resource(
     's3',
-    aws_access_key_id = 'aws key',                    //keys left blank for security reasons
-    aws_secret_access_key = 'aws secret key',
+    aws_access_key_id = 'key left blank for security reasons',
+    aws_secret_access_key = 'key left blank for security reasons',
     region_name = 'us-east-1'
 )
 
+#defines variable for bucket so I don't have to use the self-explanatory, but unecessarily long bucket name I gave it upon creation
+bucket = s3.Bucket('ist440w-m5-bucket')
 
-resource = boto3.resource(
-    's3',
-    aws_access_key_id = 'aws key',
-    aws_secret_access_key = 'aws ssecret key',
-    region_name = 'us-east-1'
-)
+#just using this to keep track of how many items (stored sensor readings) are in bucket
+item_count = 0
 
-clientResponse = client.list_buckets()
+#iterates over all files present in bucket, reads files, converts data to json, then parses and prints
+for obj in bucket.objects.all():
+    item_count = item_count + 1
+    key = obj.key
+    body = obj.get()['Body'].read().decode('utf-8')
+    parsed_data = json.loads(body)
+    print(parsed_data)
 
-print('Printing bucket names...')
-for bucket in clientResponse['Buckets']:
-    print(f'Bucket Name: {bucket["Name"]}')
+print("There are", item_count, "items in the bucket.")
