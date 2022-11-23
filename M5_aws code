@@ -17,6 +17,16 @@ time_date = None
 date = None
 time = None
 
+//forces m5 to reboot if left-most button is pressed
+def buttonA_wasPressed():
+  global time_date, date, time, timestamp
+  label0.setText('Rebooting system...')
+  wait(5)
+  machine.reset()
+  pass
+btnA.wasPressed(buttonA_wasPressed)
+
+
 wifiCfg.doConnect('wifi', 'password')
 
 label0 = M5TextBox(16, 15, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
