@@ -3,11 +3,15 @@ import pandas
 import json
 import time
 
+import pymongo as pymongo
+from pymongo import MongoClient
+from pymongo.server_api import ServerApi
+
 #establishes connection to user and contains permissions needed to access bucket, along with read files within bucket
 s3 = boto3.resource(
     's3',
-    aws_access_key_id = 'key left blank for security reasons, contact Victor for keys',
-    aws_secret_access_key = 'key left blank for security reasons, contact Victor for keys',
+    aws_access_key_id = 'access key here',
+    aws_secret_access_key = 'secret key here',
     region_name = 'us-east-1'
 )
 
@@ -17,14 +21,29 @@ bucket = s3.Bucket('ist440w-m5-bucket')
 #just using this to keep track of how many items (stored sensor readings) are in bucket
 item_count = 0
 
+
+#pymongo connection & stuff related to it
+client = pymongo.MongoClient("mongodb+srv://<AWS access key>:<AWS secret key>@cluster0.re3ie7p.mongodb.net/?authSource=%24external&authMechanism=MONGODB-AWS&retryWrites=true&w=majority", server_api=ServerApi('1'))
+
+db = client.KOADB
+collection = db.WeatherStationData
+
+try:
+    conn = MongoClient()
+    print("Connected successfully!")
+except:  
+    print("Could not connect to MongoDB.")
+
+
+
 #iterates over all files present in bucket, reads files, converts data to json, then parses and prints
 for obj in bucket.objects.all():
     item_count = item_count + 1
-    key = obj.key                                       #reads file and acquires key used by AWS (basically primary key) for each file/item in bucket
-    body = obj.get()['Body'].read().decode('utf-8')     #reads file and acquires actual data within each file/item in bucket
+    key = obj.key                                           #reads file and acquires keys used by AWS (basically primary keys) for each file
+    body = obj.get()['Body'].read().decode('utf-8')         #reads file and acquires the actual contents of each file       
     parsed_data = json.loads(body)
-    print(parsed_data)
-    print(parsed_data['pressure']               #simply here for parse testing purposes
-    print(parsed_data['date']
+    collection.insert_one(parsed_data)
+    #print(parsed_data)
+    #print(parsed_data['date'])              #just had this here to test
 
 print("There are", item_count, "items in the bucket.")
