@@ -2,24 +2,36 @@ from m5stack import *
 from m5ui import *
 from uiflow import *
 import wifiCfg
+import time
+import machine
 import ntptime
 from IoTcloud.AWS import AWS
 import json
 
-import time
 import unit
 
 setScreenColor(0x222222)
 env3_0 = unit.get(unit.ENV3, unit.PORTA)
 
 
-time_date = None
+timeDate = None
 date = None
 time = None
+timestamp = None
+tempF = None
+pressure = None
 
-//forces m5 to reboot if left-most button is pressed
+wifiCfg.doConnect('wifi-ssid', 'wifi-password')
+
+label0 = M5TextBox(16, 15, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label1 = M5TextBox(15, 124, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label2 = M5TextBox(15, 41, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label3 = M5TextBox(13, 64, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+
+
+
 def buttonA_wasPressed():
-  global time_date, date, time, timestamp
+  global timeDate, date, time, timestamp, tempF, pressure
   label0.setText('Rebooting system...')
   wait(5)
   machine.reset()
@@ -27,27 +39,21 @@ def buttonA_wasPressed():
 btnA.wasPressed(buttonA_wasPressed)
 
 
-wifiCfg.doConnect('wifi', 'password')
-
-label0 = M5TextBox(16, 15, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-label1 = M5TextBox(15, 124, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-label2 = M5TextBox(15, 41, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-
-
-
-
 if wifiCfg.wlan_sta.isconnected():
   label0.setText('Wifi is connected')
 ntp = ntptime.client(host='cn.pool.ntp.org', timezone=(-5))
-//will need new AWS key and certificate from Victor if running this, please contact for new files required
 aws = AWS(things_name='ENV_TEST', host='a3q4v5ov3u200d-ats.iot.us-east-1.amazonaws.com', port=8883, keepalive=60, cert_file_path="/flash/res/new_certificate.pem.crt", private_key_path="/flash/res/new_private.pem.key")
 aws.start()
 while True:
-  time_date = ntp.formatDatetime('-', ':')
+  timeDate = ntp.formatDatetime('-', ':')
   date = ntp.formatDate('-')
   time = ntp.formatTime(':')
-  aws.publish(str('device/1/data'),str((json.dumps(({'temp':(env3_0.temperature),'humidity':(env3_0.humidity),'pressure':(env3_0.pressure),'time':time,'date':date,'station':'Dewie'})))))
-  label1.setText(str(str((json.dumps(({'temp (C)':(env3_0.temperature),'hum (%)':(env3_0.humidity),'pres (hPa)':(env3_0.pressure),'time':time,'date':date,'station':'Dewie'}))))))
-  label2.setText(str(time_date))
+  timestamp = ntp.getTimestamp()
+  tempF = (env3_0.temperature) * 1.8 + 32
+  pressure = (env3_0.pressure) / 3386
+  aws.publish(str('device/1/data'),str((json.dumps(({'station':'Dewie','pressure':pressure,'humidity':(env3_0.humidity),'date':date,'time':time,'tempC':(env3_0.temperature),'tempF':tempF})))))
+  label1.setText(str(str((json.dumps(({'temp (C)':(env3_0.temperature),'hum (%)':(env3_0.humidity),'pres (hPa)':(env3_0.pressure),'time':time,'date':date,'station':'Dewie','tempF':tempF}))))))
+  label2.setText(str(timeDate))
+  label3.setText(str(timestamp))
   wait(5)
   wait_ms(2)
