@@ -49,11 +49,15 @@ while True:
   date = ntp.formatDate('-')
   time = ntp.formatTime(':')
   timestamp = ntp.getTimestamp()
+  if timestamp < 10000:
+    label0.setText('Default timestamp returned, rebooting system')
+    wait(2)
+    machine.reset()
   tempF = (env3_0.temperature) * 1.8 + 32
   pressure = (env3_0.pressure) / 3386
+  wait(5)
   aws.publish(str('device/1/data'),str((json.dumps(({'station':'Dewie','pressure':pressure,'humidity':(env3_0.humidity),'date':date,'time':time,'tempC':(env3_0.temperature),'tempF':tempF})))))
   label1.setText(str(str((json.dumps(({'temp (C)':(env3_0.temperature),'hum (%)':(env3_0.humidity),'pres (hPa)':(env3_0.pressure),'time':time,'date':date,'station':'Dewie','tempF':tempF}))))))
   label2.setText(str(timeDate))
   label3.setText(str(timestamp))
-  wait(5)
   wait_ms(2)
