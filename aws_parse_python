@@ -2,39 +2,78 @@ import boto3
 import pandas
 import json
 import time
+import configparser
+import shutil
 
 import pymongo as pymongo
 from pymongo import MongoClient
 from pymongo.server_api import ServerApi
 
+#creating config parser and setting parameters
+config = configparser.ConfigParser()		
+AWS = ''
+clientInfo = ''
+access_key= ''
+secret_key = ''
+
+def configParse():
+    config.read("M5_Config.ini")
+    #getting parameters to be used as variables in code
+    Mongo = config['MongoConfig']
+    AWS = config['AWSConfig']
+    access_key = AWS["access_key"]
+    secret_key = AWS["secret_key"]
+    #setting variable for Mongo connection string
+    clientInfo = Mongo["clientInfo"]
+    #test to ensure config data is properly retrieved
+    print(access_key)
+    print(secret_key)
+    print(clientInfo)
+
+configParse()
+
+
 #establishes connection to user and contains permissions needed to access bucket, along with read files within bucket
-s3 = boto3.resource(
+client = boto3.client(
     's3',
-    aws_access_key_id = 'access key here',
-    aws_secret_access_key = 'secret key here',
+    aws_access_key_id = access_key,
+    aws_secret_access_key = secret_key,
     region_name = 'us-east-1'
 )
 
-#defines variable for bucket so I don't have to use the self-explanatory, but unecessarily long bucket name I gave it upon creation
-bucket = s3.Bucket('ist440w-m5-bucket')
+s3 = boto3.resource(
+    's3',
+    aws_access_key_id = access_key,
+    aws_secret_access_key = secret_key,
+    region_name = 'us-east-1'
+)
 
-#just using this to keep track of how many items (stored sensor readings) are in bucket
-item_count = 0
 
+#pymongo connection
+client = ''
+conn = ''
 
-#pymongo connection & stuff related to it
-client = pymongo.MongoClient("mongodb+srv://<AWS access key>:<AWS secret key>@cluster0.re3ie7p.mongodb.net/?authSource=%24external&authMechanism=MONGODB-AWS&retryWrites=true&w=majority", server_api=ServerApi('1'))
+def startMongo(clientInfo):
+    Mongo = config['MongoConfig']
+    clientInfo = Mongo["clientInfo"]
+    print('Starting Mongo Connection...')
+    client = pymongo.MongoClient(clientInfo, server_api = ServerApi('1'))
 
+    try:
+        conn = MongoClient()
+        print("Successfully connected to MongoDB!")
+    except:
+        print("Failed to Connect to MongoDB.")
+
+startMongo(clientInfo)
 db = client.KOADB
 collection = db.WeatherStationData
 
-try:
-    conn = MongoClient()
-    print("Connected successfully!")
-except:  
-    print("Could not connect to MongoDB.")
 
-
+#defines variable for bucket to be used as shorter reference name in code
+bucket = s3.Bucket('ist440w-m5-bucket')
+#variable used to keep track of how many items (stored sensor readings) are in bucket
+item_count = 0
 
 #iterates over all files present in bucket, reads files, converts data to json, then parses and prints
 for obj in bucket.objects.all():
@@ -43,7 +82,7 @@ for obj in bucket.objects.all():
     body = obj.get()['Body'].read().decode('utf-8')         #reads file and acquires the actual contents of each file       
     parsed_data = json.loads(body)
     collection.insert_one(parsed_data)
-    #print(parsed_data)
-    #print(parsed_data['date'])              #just had this here to test
+    print(parsed_data)
+    print(parsed_data['date'])              #just had this here to test
 
 print("There are", item_count, "items in the bucket.")
