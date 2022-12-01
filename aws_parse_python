@@ -38,25 +38,21 @@ client = ''
 conn = ''
 collection = ''
 
-def startMongo(clientInfo):
-    Mongo = config['MongoConfig']
-    clientInfo = Mongo["clientInfo"]
-    print('Starting Mongo Connection...')
-    client = pymongo.MongoClient(clientInfo, server_api = ServerApi('1'))
-    db = client.KOADB
-    collection = db.WeatherStationData
-    try:
-        conn = MongoClient()
-        print("Successfully connected to MongoDB!")
-    except:
-        print("Failed to Connect to MongoDB.")
 
-startMongo(clientInfo)
-
-#establishes connection to user and contains permissions needed to access bucket, along with read files within bucket
+Mongo = config['MongoConfig']
+clientInfo = Mongo["clientInfo"]
+print('Starting Mongo Connection...')
+client = pymongo.MongoClient(clientInfo, server_api = ServerApi('1'))
+db = client.KOADB
+collection = db.WeatherStationData
+try:
+    conn = MongoClient()
+    print("Successfully connected to MongoDB!")
+except:
+    print("Failed to Connect to MongoDB.")
 
 
-
+#establishes connection to AWS IAM role and contains permissions needed to access bucket, along with read files within bucket
 AWS = config['AWSConfig']
 access_key = AWS["access_key"]
 secret_key = AWS["secret_key"]
@@ -72,20 +68,18 @@ s3 = boto3.resource(
 item_count = 0
 
 #iterates over all files present in bucket, reads files, converts data to json, then parses and prints
-key = ''
 bucket = s3.Bucket('ist440w-m5-bucket')
 
-def bucketDataPush():
-    for obj in bucket.objects.all():
-        item_count = item_count + 1
-        key = obj.key                                           #reads file and acquires keys used by AWS (basically primary keys) for each file
-        body = obj.get()['Body'].read().decode('utf-8')         #reads file and acquires the actual contents of each file       
-        parsed_data = json.loads(body)
-        collection.insert_one(parsed_data)
+
+for obj in bucket.objects.all():
+    item_count = item_count + 1
+    key = obj.key                                           #reads file and acquires keys used by AWS (basically primary keys) for each file
+    body = obj.get()['Body'].read().decode('utf-8')         #reads file and acquires the actual contents of each file       
+    parsed_data = json.loads(body)
+    collection.insert_one(parsed_data)
 #   print(parsed_data)
 #   print(parsed_data['date'])              #just had this here to test
 
-bucketDataPush()
+
 
 print("There are", item_count, "items in the bucket.")
-
