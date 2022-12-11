@@ -67,19 +67,20 @@ s3 = boto3.resource(
 #variable used to keep track of how many items (stored sensor readings) are in bucket
 item_count = 0
 
-#iterates over all files present in bucket, reads files, converts data to json, then parses and prints
+#iterates over all files present in bucket, reads files, converts data to json, then parses and pushes to Mongo
 bucket = s3.Bucket('ist440w-m5-bucket')
 
 
 for obj in bucket.objects.all():
     item_count = item_count + 1
-    key = obj.key                                           #reads file and acquires keys used by AWS (basically primary keys) for each file
-    body = obj.get()['Body'].read().decode('utf-8')         #reads file and acquires the actual contents of each file       
+    key = obj.key                                           
+    body = obj.get()['Body'].read().decode('utf-8')                
     parsed_data = json.loads(body)
     collection.insert_one(parsed_data)
-#   print(parsed_data)
-#   print(parsed_data['date'])              #just had this here to test
+    #deletes object from AWS after Mongo insertion to avoid having replica data
+    s3.Object('ist440w-m5-bucket', key).delete()
 
 
 
 print("There are", item_count, "items in the bucket.")
+
