@@ -1,105 +1,107 @@
 from m5stack import *
 from m5ui import *
 from uiflow import *
+import wifiCfg
 import time
+import machine
+import ntptime
+from IoTcloud.AWS import AWS
+import json
+
 import unit
 
 setScreenColor(0x000000)
 env3_0 = unit.get(unit.ENV3, unit.PORTA)
 
 
+windRNG = None
+windSpeed = None
+airQuality = None
+timeDate = None
+date = None
+time = None
+timestamp = None
+tempF = None
+pressure = None
 Random = None
 i = None
 
-
+wifiCfg.doConnect('wifi', 'password')
 
 circle0 = M5Circle(92, 90, 20, 0xFFFFFF, 0xFFFFFF)
 circle1 = M5Circle(69, 109, 15, 0xFFFFFF, 0xFFFFFF)
 circle2 = M5Circle(84, 120, 12, 0xFFFFFF, 0xFFFFFF)
 circle3 = M5Circle(122, 109, 15, 0xFFFFFF, 0xFFFFFF)
-circle4 = M5Circle(43, 39, 25, 0xFFFFFF, 0xFFFFFF)
+circle4 = M5Circle(44, 45, 25, 0xFFFFFF, 0xFFFFFF)
 rectangle0 = M5Rect(83, 138, 1, 2, 0xFFFFFF, 0xFFFFFF)
 rectangle1 = M5Rect(122, 132, 1, 2, 0xFFFFFF, 0xFFFFFF)
 rectangle2 = M5Rect(107, 138, 1, 2, 0xFFFFFF, 0xFFFFFF)
 circle5 = M5Circle(103, 114, 20, 0xFFFFFF, 0xFFFFFF)
 rectangle3 = M5Rect(68, 130, 1, 2, 0xFFFFFF, 0xFFFFFF)
-label0 = M5TextBox(157, 24, "Temp:", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-label1 = M5TextBox(157, 112, "Pressure:", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-label2 = M5TextBox(157, 192, "Humidity:", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-label3 = M5TextBox(234, 23, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-label4 = M5TextBox(235, 112, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-label5 = M5TextBox(235, 192, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-label6 = M5TextBox(157, 48, "Temp:", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-label7 = M5TextBox(157, 70, "Temp:", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-label8 = M5TextBox(235, 48, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-label9 = M5TextBox(235, 70, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-label10 = M5TextBox(157, 144, "Pressure:", lcd.FONT_Default, 0xFFFFFF, rotate=0)
-label11 = M5TextBox(233, 144, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label0 = M5TextBox(140, 20, "Temp(F):", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label1 = M5TextBox(140, 50, "Pressure(inHg):", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label2 = M5TextBox(140, 80, "Humidity(%):", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label3 = M5TextBox(205, 20, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label4 = M5TextBox(250, 50, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label5 = M5TextBox(235, 80, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label6 = M5TextBox(28, 195, "Wind Speed(mph):", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label7 = M5TextBox(30, 220, "Air Quality (ppm):", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label8 = M5TextBox(160, 220, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label9 = M5TextBox(160, 195, "Text", lcd.FONT_Default, 0xFFFFFF, rotate=0)
+label10 = M5TextBox(28, 175, "Text", lcd.FONT_DefaultSmall, 0xFFFFFF, rotate=0)
 
 import random
 
 
 
+def buttonA_wasPressed():
+  global windRNG, windSpeed, airQuality, timeDate, date, time, timestamp, tempF, pressure, Random, i
+  label10.setText('Rebooting system...')
+  wait(2)
+  machine.reset()
+  pass
+btnA.wasPressed(buttonA_wasPressed)
 
+def buttonB_wasPressed():
+  global windRNG, windSpeed, airQuality, timeDate, date, time, timestamp, tempF, pressure, Random, i
+  windRNG = random.randint(2, 20)
+  pass
+btnB.wasPressed(buttonB_wasPressed)
+
+def buttonC_wasPressed():
+  global windRNG, windSpeed, airQuality, timeDate, date, time, timestamp, tempF, pressure, Random, i
+  windRNG = random.randint(45, 80)
+  pass
+btnC.wasPressed(buttonC_wasPressed)
+
+
+if wifiCfg.wlan_sta.isconnected():
+  label10.setText('Connected to Wifi!')
+ntp = ntptime.client(host='cn.pool.ntp.org', timezone=(-5))
+aws = AWS(things_name='thing_name', host='a3q4v5ov3u200d-ats.iot.us-east-1.amazonaws.com', port=8883, keepalive=60, cert_file_path='', private_key_path='')
+windRNG = 0
+aws.start()
 while True:
-  label3.setText(str(env3_0.temperature))
-  label4.setText(str(env3_0.pressure))
+  windSpeed = 0 + windRNG
+  airQuality = random.randint(500, 600)
+  timeDate = ntp.formatDatetime('-', ':')
+  date = ntp.formatDate('-')
+  time = ntp.formatTime(':')
+  timestamp = ntp.getTimestamp()
+  label3.setText(str((env3_0.temperature) * 1.8 + 32))
+  label4.setText(str((env3_0.pressure) / 3386))
   label5.setText(str(env3_0.humidity))
-  label8.setText(str((env3_0.temperature) * (32 / (9 + 5))))
-  label9.setText(str((env3_0.temperature) + 273.15))
-  label11.setText(str((env3_0.pressure) / 1.333))
+  label8.setText(str(airQuality))
+  label9.setText(str(windSpeed))
+  if timestamp < 10000:
+    label10.setText('Default timestamp returned, rebooting system')
+    wait(2)
+    machine.reset()
+  tempF = (env3_0.temperature) * 1.8 + 32
+  pressure = (env3_0.pressure) / 3386
+  wait(10)
+  aws.publish(str('device/[number]/data'),str((json.dumps(({'station':'Louie','pressure':pressure,'humidity':(env3_0.humidity),'date':date,'time':time,'tempC':(env3_0.temperature),'tempF':tempF,'windSpeed':windSpeed,'airQuality':airQuality})))))
   wait(5)
-  if (env3_0.humidity) >= 48:
-    circle4.setBgColor(0x000000)
-    circle4.setBorderColor(0x000000)
-    circle0.setBgColor(0x666666)
-    circle0.setBorderColor(0x666666)
-    circle1.setBgColor(0x666666)
-    circle1.setBorderColor(0x666666)
-    circle2.setBgColor(0x666666)
-    circle2.setBorderColor(0x666666)
-    circle3.setBgColor(0x666666)
-    circle3.setBorderColor(0x666666)
-    circle5.setBgColor(0x666666)
-    circle5.setBorderColor(0x666666)
-    rgb.setColorAll(0xcc0000)
-    rectangle0.setBorderColor(0x3366ff)
-    rectangle1.setBorderColor(0x3366ff)
-    rectangle2.setBorderColor(0x3366ff)
-    rectangle3.setBorderColor(0x3366ff)
-    Random = random.randint(2, 50)
-    rectangle0.setSize(height=Random)
-    Random = random.randint(2, 50)
-    rectangle1.setSize(height=Random)
-    Random = random.randint(2, 50)
-    rectangle2.setSize(height=Random)
-    Random = random.randint(2, 50)
-    rectangle3.setSize(height=Random)
-  else:
-    rectangle0.setBorderColor(0x000000)
-    rectangle1.setBorderColor(0x000000)
-    rectangle2.setBorderColor(0x000000)
-    rectangle3.setBorderColor(0x000000)
-    circle4.setBgColor(0xffcc33)
-    circle4.setBorderColor(0xff6600)
-    circle0.setBgColor(0xffffff)
-    circle0.setBorderColor(0xffffff)
-    circle1.setBgColor(0xffffff)
-    circle1.setBorderColor(0xffffff)
-    circle2.setBgColor(0xffffff)
-    circle2.setBorderColor(0xffffff)
-    circle3.setBgColor(0xffffff)
-    circle3.setBorderColor(0xffffff)
-    circle5.setBgColor(0xffffff)
-    circle5.setBorderColor(0xffffff)
-    rgb.setColorAll(0xffff00)
-    for i in range(25, 36):
-      lcd.circle(43, 39, i, color=0xcc9933)
-      lcd.circle(43, 39, (i - 1), color=0x000000)
-      wait(0.05)
-    lcd.circle(43, 39, 35, color=0x000000)
-  wait_ms(2)
-
   if (env3_0.humidity) >= 48:
     circle4.setBgColor(0x000000)
     circle4.setBorderColor(0x000000)
